@@ -18,6 +18,13 @@ unsigned long endStateInterval = 1000L;
 // flip this variable when 1 second elapses
 bool hasOneSecondElapsed = false;
 
+/*************************************************************
+   GAME OVER
+ *************************************************************/
+void gameOver() {
+  endStateTime = millis() + endStateInterval; // start off the 1s timer
+  gotoState(S_END); // go to the end state
+}
 
 /*************************************************************
    This is the state machine code given in the worksheet, which
@@ -76,8 +83,7 @@ void handleInput() {
       break;
     case S_GAME:
       if (AberLED.getButtonDown(FIRE)) {
-        endStateTime = millis() + endStateInterval; 
-        gotoState(S_END);
+        gameOver();
       }
       break;
     case S_END:
