@@ -10,6 +10,13 @@
 /*************************************************************
    Other parts of the model than the state
  *************************************************************/
+/*
+   ONE SECOND TIMER FOR END STATE
+*/
+unsigned long endStateTime = 0L;
+unsigned long endStateInterval = 1000L;
+// flip this variable when 1 second elapses
+bool hasOneSecondElapsed = false;
 
 
 /*************************************************************
@@ -69,11 +76,13 @@ void handleInput() {
       break;
     case S_GAME:
       if (AberLED.getButtonDown(FIRE)) {
+        endStateTime = millis() + endStateInterval; 
         gotoState(S_END);
       }
       break;
     case S_END:
-      if (AberLED.getButtonDown(FIRE)) {
+      if (AberLED.getButtonDown(FIRE) && hasOneSecondElapsed) {
+        hasOneSecondElapsed = false; // reset to false
         gotoState(S_START);
       }
       break;
@@ -89,6 +98,12 @@ void handleInput() {
 */
 void updateModel() {
   switch (state) {
+    case S_END:
+      if (millis() >= endStateTime) {
+        endStateTime = millis() + endStateInterval;
+        hasOneSecondElapsed = true; // can move to S_START
+      }
+      break;
     default:
       Serial.println("Invalid state!");
   }
