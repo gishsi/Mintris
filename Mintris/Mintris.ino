@@ -10,6 +10,56 @@
 /*************************************************************
    Other parts of the model than the state
  *************************************************************/
+int grid[8][8];
+/*************************************************************
+   PLAYER MODEL
+ *************************************************************/
+int playerX;
+int playerY;
+int playerScore;
+
+// timer variables responsible for the player falling
+unsigned long fallingEvent;
+unsigned long fallingInterval; // assigned in setup, not in the initPlayer() ( would overwrite pogressivelyFaster())
+
+
+void movePlayerLeft() {
+  if (playerX > 0) {
+    if (grid[playerX - 1][playerY] != 2) {
+      playerX--;
+    } else {
+      gameOver();
+    }
+  }
+}
+void movePlayerRight() {
+  /*
+     i'm doing double if because the else only applies to the second condition
+  */
+  if (playerX < 7) {
+    if (grid[playerX + 1][playerY] != 2) {
+      playerX++;
+    } else {
+      gameOver();
+    }
+  }
+}
+
+void renderPlayer() {
+  AberLED.set(playerX, playerY, YELLOW);
+}
+
+void initPlayer() {
+  playerX = random(0, 8);
+  playerY = 0;
+  playerScore = 0;
+  // I am not initializing the fallingInterval here but globaly so
+  //that the progressivelyFaster funtion can alter it without being overwritten
+  fallingEvent = millis() + fallingInterval;
+}
+
+
+
 /*
    ONE SECOND TIMER FOR END STATE
 */
@@ -17,6 +67,12 @@ unsigned long endStateTime = 0L;
 unsigned long endStateInterval = 1000L;
 // flip this variable when 1 second elapses
 bool hasOneSecondElapsed = false;
+/*************************************************************
+   INIT MODEL
+ *************************************************************/
+void initModel() {
+  initPlayer();
+}
 
 /*************************************************************
    GAME OVER
@@ -65,7 +121,10 @@ unsigned long getStateTime() {
 
 void setup() {
   AberLED.begin();
-  // remember to go to the initial state!
+  Serial.begin(9600);
+  randomSeed(analogRead(0));
+  fallingInterval = 350L;
+  initModel();
   gotoState(S_START);
 }
 
@@ -78,10 +137,17 @@ void handleInput() {
   switch (state) {
     case S_START:
       if (AberLED.getButtonDown(FIRE)) {
+        initModel();
         gotoState(S_GAME);
       }
       break;
     case S_GAME:
+     if (AberLED.getButtonDown(4)) {
+        movePlayerLeft();
+      }
+      if (AberLED.getButtonDown(3)) {
+        movePlayerRight();
+      }
       if (AberLED.getButtonDown(FIRE)) {
         gameOver();
       }
@@ -104,6 +170,15 @@ void handleInput() {
 */
 void updateModel() {
   switch (state) {
+    case S_GAME:
+      if (millis() >= fallingEvent) {
+        fallingEvent = millis() + fallingInterval;
+        playerY++;
+      }
+      if (playerY == 7) {
+        initPlayer();
+      }
+      break;
     case S_END:
       if (millis() >= endStateTime) {
         endStateTime = millis() + endStateInterval;
@@ -126,7 +201,7 @@ void render() {
       AberLED.set(4, 4, GREEN);
       break;
     case S_GAME:
-      AberLED.set(4, 4, YELLOW);
+      renderPlayer();
       break;
     case S_END:
       AberLED.set(4, 4, RED);
