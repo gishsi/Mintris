@@ -79,6 +79,14 @@ void renderPlayer() {
   AberLED.set(playerX, playerY, YELLOW);
 }
 
+// can the player be created in the first row? (or is it occupied by a red block?)
+bool canItBeCreated(int randomX) {
+  if (grid[randomX][0] == 1) {
+    return false;
+  }
+  return true;
+}
+
 void initPlayer() {
   playerX = random(0, 8);
   playerY = 0;
@@ -87,8 +95,6 @@ void initPlayer() {
   //that the progressivelyFaster funtion can alter it without being overwritten
   fallingEvent = millis() + fallingInterval;
 }
-
-
 
 /*
    ONE SECOND TIMER FOR END STATE
@@ -201,11 +207,18 @@ void handleInput() {
 */
 void updateModel() {
   switch (state) {
+    case S_START:
+      break;
     case S_GAME:
       if (millis() >= fallingEvent) {
         fallingEvent = millis() + fallingInterval;
         playerY++;
       }
+      // check if a given X position is not a RED block, end game if it is
+      if (!canItBeCreated(playerX)) {
+        gameOver();
+      }
+      // turning the block red and initializing the player again
       if (playerY == 7 || grid[playerX][playerY + 1] == 1) {
         grid[playerX][playerY] = 1;
         initPlayer();
