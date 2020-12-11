@@ -10,7 +10,37 @@
 /*************************************************************
    Other parts of the model than the state
  *************************************************************/
-int grid[8][8];
+
+/*************************************************************
+   GRID MODEL
+   1 - a red block
+ *************************************************************/
+int grid[8][8]; // 8x8 grid for the game
+ 
+void renderGrid() {
+  for (int x = 0; x < 8; x ++ ) {
+    for (int y = 0; y < 8; y++ ) {
+      switch (grid[x][y]) {
+        case 0:
+          break;
+        case 1:
+          AberLED.set(x, y, RED);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+// initialize all blocks
+void initBlocks() {
+  for (int y = 0; y < 8; y ++) {
+    for (int x = 0; x < 8; x++) {
+      grid[x][y] = 0;
+    }
+  }
+}
+
 /*************************************************************
    PLAYER MODEL
  *************************************************************/
@@ -25,7 +55,7 @@ unsigned long fallingInterval; // assigned in setup, not in the initPlayer() ( w
 
 void movePlayerLeft() {
   if (playerX > 0) {
-    if (grid[playerX - 1][playerY] != 2) {
+    if (grid[playerX - 1][playerY] != 1) {
       playerX--;
     } else {
       gameOver();
@@ -37,7 +67,7 @@ void movePlayerRight() {
      i'm doing double if because the else only applies to the second condition
   */
   if (playerX < 7) {
-    if (grid[playerX + 1][playerY] != 2) {
+    if (grid[playerX + 1][playerY] != 1) {
       playerX++;
     } else {
       gameOver();
@@ -71,6 +101,7 @@ bool hasOneSecondElapsed = false;
    INIT MODEL
  *************************************************************/
 void initModel() {
+  initBlocks();
   initPlayer();
 }
 
@@ -142,7 +173,7 @@ void handleInput() {
       }
       break;
     case S_GAME:
-     if (AberLED.getButtonDown(4)) {
+      if (AberLED.getButtonDown(4)) {
         movePlayerLeft();
       }
       if (AberLED.getButtonDown(3)) {
@@ -175,7 +206,8 @@ void updateModel() {
         fallingEvent = millis() + fallingInterval;
         playerY++;
       }
-      if (playerY == 7) {
+      if (playerY == 7 || grid[playerX][playerY + 1] == 1) {
+        grid[playerX][playerY] = 1;
         initPlayer();
       }
       break;
@@ -202,6 +234,7 @@ void render() {
       break;
     case S_GAME:
       renderPlayer();
+      renderGrid();
       break;
     case S_END:
       AberLED.set(4, 4, RED);
