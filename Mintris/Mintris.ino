@@ -210,15 +210,20 @@ void initModel() {
   initTimers();
 }
 /*************************************************************
-   DRAWING TO THE GRID - START 
+   DRAWING TO THE GRID 
  *************************************************************/
 unsigned long stringEvent;
 unsigned const long stringInterval = 400L;
 int colour;
- 
+
+// START STATE
 int press[7] = {SPACE, P, R, E, S, S, FIVE};
 int pressIndex;
 
+//END STATE
+int end[4] = {SPACE, E, N, D};
+int endIndex;
+// FUNCTIONS
 void renderString(int letter[8][8], int colour) {
   for (int j = 0; j < 8; j++) {
     for (int i = 0; i < 8; i++) {
@@ -228,8 +233,6 @@ void renderString(int letter[8][8], int colour) {
     }
   }
 }
-
- 
 /*************************************************************
    This is the state machine code given in the worksheet, which
    you should use in your assignment too.
@@ -287,6 +290,7 @@ bool hasOneSecondElapsed = false;
 void handleInput() {
   switch (state) {
     case S_START:
+      endIndex = 0; // so that it the END string will start over every time player loses
       if (AberLED.getButtonDown(FIRE)) {
         fallingInterval = 250L;
         playerScore = 0;
@@ -377,6 +381,13 @@ void updateModel() {
       if (getStateTime() >= SECOND) {
         hasOneSecondElapsed = true;
       }
+      if (millis() > stringEvent) {
+        stringEvent = millis() + stringInterval;
+        endIndex++;
+        if (endIndex == 4) {
+          endIndex = 0;
+        }
+      }
       break;
     default:
       Serial.println("Invalid state!");
@@ -398,7 +409,7 @@ void render() {
       renderGrid();
       break;
     case S_END:
-      AberLED.set(4, 4, RED);
+      renderString(end[endIndex], RED);
       break;
     default:
       Serial.println("Invalid state!");
