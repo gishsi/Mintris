@@ -16,7 +16,7 @@
    1 - a red block
  *************************************************************/
 int grid[8][8]; // 8x8 grid for the game
- 
+
 void renderGrid() {
   for (int x = 0; x < 8; x ++ ) {
     for (int y = 0; y < 8; y++ ) {
@@ -182,10 +182,10 @@ void handleInput() {
   switch (state) {
     case S_START:
       if (AberLED.getButtonDown(FIRE)) {
-        fallingInterval = 250L;
+        fallingInterval = 150L;
         playerScore = 0;
         gotoState(S_GAME);
-        initModel(); 
+        initModel();
         // when I called this function before going to the game state, in the first instance the model was created
         // the Game State render wouldn't be fast enough to render the user at posistion y = 0;
         // instead it incremented first to y = 1
@@ -198,7 +198,7 @@ void handleInput() {
       if (AberLED.getButtonDown(3)) {
         movePlayerRight();
       }
-      if (AberLED.getButtonDown(FIRE)) {
+      if (AberLED.getButtonDown(FIRE)) { // delete this later
         gameOver();
       }
       break;
@@ -243,7 +243,7 @@ void updateModel() {
       }
       break;
     case S_END:
-      if(getStateTime() >= 1000) {
+      if (getStateTime() >= 1000) {
         hasOneSecondElapsed = true;
       }
       break;
