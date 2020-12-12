@@ -112,20 +112,10 @@ void initPlayer() {
   fallingEvent = millis() + fallingInterval;
 }
 
-/*
-   ONE SECOND TIMER FOR END STATE
-*/
-unsigned long endStateTime = 0L;
-unsigned long endStateInterval = 1000L;
-// flip this variable when 1 second elapses
-bool hasOneSecondElapsed = false;
-
-
 /*************************************************************
    GAME OVER
  *************************************************************/
 void gameOver() {
-  endStateTime = millis() + endStateInterval; // start off the 1s timer
   gotoState(S_END); // go to the end state
 }
 /*************************************************************
@@ -184,6 +174,9 @@ void setup() {
    In handleInput, we deal separately with how each state
    handles user input using a switch statement.
 */
+
+// flip this variable when 1 second elapses (for the END state)
+bool hasOneSecondElapsed = false;
 
 void handleInput() {
   switch (state) {
@@ -250,9 +243,8 @@ void updateModel() {
       }
       break;
     case S_END:
-      if (millis() >= endStateTime) {
-        endStateTime = millis() + endStateInterval;
-        hasOneSecondElapsed = true; // can move to S_START
+      if(getStateTime() >= 1000) {
+        hasOneSecondElapsed = true;
       }
       break;
     default:
