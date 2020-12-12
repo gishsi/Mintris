@@ -32,8 +32,8 @@ void renderGrid() {
     }
   }
 }
-// initialize all blocks
-void initBlocks() {
+// initialize the grid
+void initGrid() {
   for (int y = 0; y < 8; y ++) {
     for (int x = 0; x < 8; x++) {
       grid[x][y] = 0;
@@ -115,7 +115,7 @@ void gameOver() {
    INIT MODEL
  *************************************************************/
 void initModel() {
-  initBlocks();
+  initGrid();
   initPlayer();
 }
 /*************************************************************
@@ -172,10 +172,13 @@ void handleInput() {
   switch (state) {
     case S_START:
       if (AberLED.getButtonDown(FIRE)) {
-        initModel();
         fallingInterval = 350L;
         playerScore = 0;
         gotoState(S_GAME);
+        initModel(); 
+        // when I called this function before going to the game state, in the first instance the model was created
+        // the Game State render wouldn't be fast enough to render the user at posistion y = 0;
+        // instead it incremented first to y = 1
       }
       break;
     case S_GAME:
