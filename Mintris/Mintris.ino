@@ -32,6 +32,23 @@ void renderGrid() {
     }
   }
 }
+// we must go in a reversed order because otherwise we would overwrite rows (copy the one row over and over again)
+void scrollGridDown(int rowY) {
+  for (int x = 0; x < 8; x++) {
+    for (int y = rowY - 1; y >= 0; y--) {
+      grid[x][y + 1] = grid[x][y];
+    }
+  }
+}
+// check if the given row is full
+bool isRowFull(int rowY) {
+  for (int x = 0; x < 8; x++) {
+    if (grid[x][rowY] != 1) {
+      return false;
+    }
+  }
+  return true;
+}
 // initialize the grid
 void initGrid() {
   for (int y = 0; y < 8; y ++) {
@@ -172,7 +189,7 @@ void handleInput() {
   switch (state) {
     case S_START:
       if (AberLED.getButtonDown(FIRE)) {
-        fallingInterval = 350L;
+        fallingInterval = 50L;
         playerScore = 0;
         gotoState(S_GAME);
         initModel(); 
@@ -225,6 +242,11 @@ void updateModel() {
       if (playerY == 7 || grid[playerX][playerY + 1] == 1) {
         grid[playerX][playerY] = 1;
         initPlayer();
+      }
+      // if isRowFull returns true then we scroll the grid
+      if (isRowFull(7)) {
+        scrollGridDown(7);
+        playerScore++;
       }
       break;
     case S_END:
