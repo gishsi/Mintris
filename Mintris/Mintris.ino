@@ -91,6 +91,38 @@ void movePlayerRight() {
     }
   }
 }
+/*
+   movePlayerDown() - additional
+*/
+void movePlayerDown() {
+  if (grid[playerX][7] != 1) { // i need to check for the bottom row
+    // if it is empty then I need to place a red block there
+    playerY = 7;
+    //grid[playerX][playerY] = 1;
+  } else  {
+    // must be 8 so that the if condition triggers correctly
+    // if it is not I put a block in the previous y position
+    for (int y = 0; y < 8; y++) {
+      if (grid[playerX][y] == 1) {
+        playerY = y - 1;
+        grid[playerX][playerY] = 1;
+      }
+    }
+  }
+}
+
+/*
+ * Player falls faster - additional
+ */
+unsigned const long fasterInterval = 5000L; // every 5 seconds the player starts to fall faster
+unsigned long fasterEvent;
+// the velocity of the player shoudn't be too high
+void pogressivelyFaster() {
+  if (fallingInterval >= 130L) {
+    fallingInterval -= 10L;
+  }
+}
+
 
 void renderPlayer() {
   AberLED.set(playerX, playerY, YELLOW);
@@ -116,11 +148,25 @@ void initPlayer() {
    GAME OVER
  *************************************************************/
 void gameOver() {
+  scoreDisplay();
   gotoState(S_END); // go to the end state
 }
+//time survived & rows destroyed
+void scoreDisplay () { // time survived & rows destroyed
+  Serial.print("Your score: ");
+  Serial.println(playerScore);
+  Serial.print("Time survived: ");
+  Serial.print(float(getStateTime() / 1000.00)); // using the functions from framework to see how long the player survived for
+  Serial.println(" s");
+}
+
 /*************************************************************
    INIT MODEL
  *************************************************************/
+ void initTimers() {
+  fasterEvent = millis() + fasterInterval;
+  //moveTowerUpEvent = millis() + moveTowerUpInterval;
+}
 void initModel() {
   initGrid();
   initPlayer();
@@ -182,7 +228,7 @@ void handleInput() {
   switch (state) {
     case S_START:
       if (AberLED.getButtonDown(FIRE)) {
-        fallingInterval = 150L;
+        fallingInterval = 250L;
         playerScore = 0;
         gotoState(S_GAME);
         initModel();
@@ -200,6 +246,9 @@ void handleInput() {
       }
       if (AberLED.getButtonDown(FIRE)) { // delete this later
         gameOver();
+      }
+      if (AberLED.getButtonDown(DOWN)) {
+        movePlayerDown();
       }
       break;
     case S_END:
@@ -240,6 +289,10 @@ void updateModel() {
       if (isRowFull(7)) {
         scrollGridDown(7);
         playerScore++;
+      }
+      if (millis() >= fasterEvent) {
+        fasterEvent = millis() + fasterInterval;
+        pogressivelyFaster();
       }
       break;
     case S_END:
