@@ -55,7 +55,7 @@ bool isRowFull(int rowY) {
   MOVE TOWER UP
 *************************************************************/
 
-unsigned const long moveTowerUpInterval = 20000L;
+unsigned const long moveTowerUpInterval = 15000L;
 unsigned long moveTowerUpEvent;
 // check if it won't go outside the 8x8 grid if it moves up
 // move everything  up
@@ -181,6 +181,7 @@ void initPlayer() {
 #define MINUTE 60000
 #define SECOND 1000
 void gameOver() {
+  initGrid();
   scoreDisplay();
   gotoState(S_END); // go to the end state
 }
@@ -193,7 +194,7 @@ void scoreDisplay () { // time survived & rows destroyed
   int seconds =  (getStateTime() % MINUTE) / SECOND;
   int minutes = getStateTime() / MINUTE;
   Serial.print(minutes); //minutes
-  Serial.print("min ");
+  Serial.print(" min ");
   Serial.print(seconds);
   Serial.println(" sec");
 }
@@ -221,9 +222,6 @@ int colour;
 const int press[7] = {SPACE, P, R, E, S, S, FIVE};
 int pressIndex;
 
-//END STATE
-const int end[4] = {SPACE, E, N, D};
-int endIndex;
 // FUNCTIONS
 void renderString(int letter[8][8], int colour) {
   for (int j = 0; j < 8; j++) {
@@ -241,7 +239,7 @@ void renderString(int letter[8][8], int colour) {
 const int firstDigit = 0; // can be either 0 or 4
 const int secondDigit = 4;
 const int singleDigit = 2;
-
+// render the grid
 void renderScore() {
   for (int j = 0; j < 8; j++) {
     for (int i = 0; i < 8; i++) {
@@ -251,7 +249,7 @@ void renderScore() {
     }
   }
 }
-
+//set the grid
 void setGrid(int number[8][4], int offset) {
   for (int j = 0; j < 4; j++) {
     for (int i = 0; i < 8; i++) {
@@ -262,6 +260,7 @@ void setGrid(int number[8][4], int offset) {
     }
   }
 }
+// pick  a number and apply an offset if necessary
 void pickNumber(int score, int offset) {
   switch (score) {
     case 0:
@@ -356,7 +355,6 @@ bool hasOneSecondElapsed = false;
 void handleInput() {
   switch (state) {
     case S_START:
-      endIndex = 0; // so that it the END string will start over every time player loses
       if (AberLED.getButtonDown(FIRE)) {
         fallingInterval = 250L;
         playerScore = 0;
@@ -373,9 +371,6 @@ void handleInput() {
       }
       if (AberLED.getButtonDown(3)) {
         movePlayerRight();
-      }
-      if (AberLED.getButtonDown(FIRE)) { // delete this later
-        gameOver();
       }
       if (AberLED.getButtonDown(DOWN)) {
         movePlayerDown();
@@ -398,7 +393,7 @@ void handleInput() {
    response to user input. The state is part of the model, so here
    we deal with changing state over time.
 */
-int score = 19;
+
 void updateModel() {
   switch (state) {
     case S_START:
@@ -448,21 +443,13 @@ void updateModel() {
       if (getStateTime() >= SECOND) {
         hasOneSecondElapsed = true;
       }
-      if (millis() > stringEvent) {
-        stringEvent = millis() + stringInterval;
-        endIndex++;
-        if (endIndex == 4) {
-          // end string displayed - score
-          endIndex = 0;
-          if (score < 10) {
-            // if its a single number then display in the middle
-            pickNumber(score, singleDigit);
-          } else if (score < 100) {
-            // this score display only supports  score less than 100
-            pickNumber(score / 10, firstDigit);
-            pickNumber(score % 10, secondDigit);
-          }
-        }
+      if (playerScore < 10) {
+        // if its a single number then display in the middle
+        pickNumber(playerScore, singleDigit);
+      } else if (playerScore < 100) {
+        // this score display only supports  score less than 100
+        pickNumber(playerScore / 10, firstDigit);
+        pickNumber(playerScore % 10, secondDigit);
       }
       break;
     default:
@@ -485,7 +472,6 @@ void render() {
       renderGrid();
       break;
     case S_END:
-      //mnrenderString(end[endIndex], RED);
       renderScore();
       break;
     default:
