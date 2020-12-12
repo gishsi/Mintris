@@ -148,7 +148,7 @@ unsigned const long fasterInterval = 5000L; // every 5 seconds the player starts
 unsigned long fasterEvent;
 // the velocity of the player shoudn't be too high
 void pogressivelyFaster() {
-  if (fallingInterval >= 130L) {
+  if (fallingInterval >= 100L) {
     fallingInterval -= 10L;
   }
 }
@@ -207,6 +207,7 @@ void initTimers() {
 void initModel() {
   initGrid();
   initPlayer();
+  initTimers();
 }
 /*************************************************************
    This is the state machine code given in the worksheet, which
