@@ -90,7 +90,6 @@ bool canItBeCreated(int randomX) {
 void initPlayer() {
   playerX = random(0, 8);
   playerY = 0;
-  playerScore = 0;
   // I am not initializing the fallingInterval here but globaly so
   //that the progressivelyFaster funtion can alter it without being overwritten
   fallingEvent = millis() + fallingInterval;
@@ -160,7 +159,6 @@ void setup() {
   AberLED.begin();
   Serial.begin(9600);
   randomSeed(analogRead(0));
-  fallingInterval = 350L;
   initModel();
   gotoState(S_START);
 }
@@ -175,6 +173,8 @@ void handleInput() {
     case S_START:
       if (AberLED.getButtonDown(FIRE)) {
         initModel();
+        fallingInterval = 350L;
+        playerScore = 0;
         gotoState(S_GAME);
       }
       break;
