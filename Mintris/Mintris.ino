@@ -1,5 +1,6 @@
 #include <AberLED.h>
 #include "letters.h"
+#include "numbers.h"
 // this is an invalid state: if we are in this state, things have
 // gone badly wrong! The setup function should change this immediately.
 #define S_INVALID   -1
@@ -210,18 +211,18 @@ void initModel() {
   initTimers();
 }
 /*************************************************************
-   DRAWING TO THE GRID 
+   DRAWING TO THE GRID
  *************************************************************/
 unsigned long stringEvent;
 unsigned const long stringInterval = 400L;
 int colour;
 
 // START STATE
-int press[7] = {SPACE, P, R, E, S, S, FIVE};
+const int press[7] = {SPACE, P, R, E, S, S, FIVE};
 int pressIndex;
 
 //END STATE
-int end[4] = {SPACE, E, N, D};
+const int end[4] = {SPACE, E, N, D};
 int endIndex;
 // FUNCTIONS
 void renderString(int letter[8][8], int colour) {
@@ -233,6 +234,71 @@ void renderString(int letter[8][8], int colour) {
     }
   }
 }
+/*************************************************************
+   SCORE DISPLAY
+ *************************************************************/
+// values that will be added to x depending on their position
+const int firstDigit = 0; // can be either 0 or 4
+const int secondDigit = 4;
+const int singleDigit = 2;
+
+void renderScore() {
+  for (int j = 0; j < 8; j++) {
+    for (int i = 0; i < 8; i++) {
+      if (grid[i][j] == 1) {
+        AberLED.set(j, i, RED);
+      }
+    }
+  }
+}
+
+void setGrid(int number[8][4], int offset) {
+  for (int j = 0; j < 4; j++) {
+    for (int i = 0; i < 8; i++) {
+      if (number[i][j] == 1) {
+        // offset must apply to j (rows in multidimensional arrays)
+        grid[i][j + offset] = number[i][j];
+      }
+    }
+  }
+}
+void pickNumber(int score, int offset) {
+  switch (score) {
+    case 0:
+      setGrid(zero, offset);
+      break;
+    case 1:
+      setGrid(one, offset);
+      break;
+    case 2:
+      setGrid(two, offset);
+      break;
+    case 3:
+      setGrid(three, offset);
+      break;
+    case 4:
+      setGrid(four, offset);
+      break;
+    case 5:
+      setGrid(five, offset);
+      break;
+    case 6:
+      setGrid(six, offset);
+      break;
+    case 7:
+      setGrid(seven, offset);
+      break;
+    case 8:
+      setGrid(eight, offset);
+      break;
+    case 9:
+      setGrid(nine, offset);
+      break;
+    default:
+      break;
+  }
+}
+
 /*************************************************************
    This is the state machine code given in the worksheet, which
    you should use in your assignment too.
@@ -332,10 +398,11 @@ void handleInput() {
    response to user input. The state is part of the model, so here
    we deal with changing state over time.
 */
+int score = 19;
 void updateModel() {
   switch (state) {
     case S_START:
-       if (millis() > stringEvent) {
+      if (millis() > stringEvent) {
         stringEvent = millis() + stringInterval;
         colour = random(1, 4); // random color: red, green and yellow
         pressIndex++;
@@ -385,7 +452,16 @@ void updateModel() {
         stringEvent = millis() + stringInterval;
         endIndex++;
         if (endIndex == 4) {
+          // end string displayed - score
           endIndex = 0;
+          if (score < 10) {
+            // if its a single number then display in the middle
+            pickNumber(score, singleDigit);
+          } else if (score < 100) {
+            // this score display only supports  score less than 100
+            pickNumber(score / 10, firstDigit);
+            pickNumber(score % 10, secondDigit);
+          }
         }
       }
       break;
@@ -409,7 +485,8 @@ void render() {
       renderGrid();
       break;
     case S_END:
-      renderString(end[endIndex], RED);
+      //mnrenderString(end[endIndex], RED);
+      renderScore();
       break;
     default:
       Serial.println("Invalid state!");
