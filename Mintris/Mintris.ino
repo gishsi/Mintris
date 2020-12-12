@@ -103,13 +103,7 @@ unsigned long endStateTime = 0L;
 unsigned long endStateInterval = 1000L;
 // flip this variable when 1 second elapses
 bool hasOneSecondElapsed = false;
-/*************************************************************
-   INIT MODEL
- *************************************************************/
-void initModel() {
-  initBlocks();
-  initPlayer();
-}
+
 
 /*************************************************************
    GAME OVER
@@ -118,7 +112,13 @@ void gameOver() {
   endStateTime = millis() + endStateInterval; // start off the 1s timer
   gotoState(S_END); // go to the end state
 }
-
+/*************************************************************
+   INIT MODEL
+ *************************************************************/
+void initModel() {
+  initBlocks();
+  initPlayer();
+}
 /*************************************************************
    This is the state machine code given in the worksheet, which
    you should use in your assignment too.
