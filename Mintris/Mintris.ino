@@ -189,7 +189,7 @@ void handleInput() {
   switch (state) {
     case S_START:
       if (AberLED.getButtonDown(FIRE)) {
-        fallingInterval = 50L;
+        fallingInterval = 250L;
         playerScore = 0;
         gotoState(S_GAME);
         initModel(); 
