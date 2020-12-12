@@ -49,6 +49,36 @@ bool isRowFull(int rowY) {
   }
   return true;
 }
+
+/*************************************************************
+  MOVE TOWER UP
+*************************************************************/
+
+unsigned const long moveTowerUpInterval = 20000L;
+unsigned long moveTowerUpEvent;
+// check if it won't go outside the 8x8 grid if it moves up
+// move everything  up
+// overwrite the bottom row
+void scrollGridUp() {
+  // must only move blocks
+  for (int x = 0; x < 8; x++) {
+    for (int y = 0; y < 8; y++) {
+      if (grid[x][y] == 1) {
+        grid[x][y - 1] = grid[x][y];
+      }
+    }
+  }
+}
+bool canItMoveUp() {
+  // the grid cannot be moved up if there is atleast one red block in the top row
+  for (int x = 0; x < 8; x++) {
+    if (grid[x][0] == 1) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // initialize the grid
 void initGrid() {
   for (int y = 0; y < 8; y ++) {
@@ -112,8 +142,8 @@ void movePlayerDown() {
 }
 
 /*
- * Player falls faster - additional
- */
+   Player falls faster - additional
+*/
 unsigned const long fasterInterval = 5000L; // every 5 seconds the player starts to fall faster
 unsigned long fasterEvent;
 // the velocity of the player shoudn't be too high
@@ -147,6 +177,8 @@ void initPlayer() {
 /*************************************************************
    GAME OVER
  *************************************************************/
+#define MINUTE 60000
+#define SECOND 1000
 void gameOver() {
   scoreDisplay();
   gotoState(S_END); // go to the end state
@@ -156,16 +188,21 @@ void scoreDisplay () { // time survived & rows destroyed
   Serial.print("Your score: ");
   Serial.println(playerScore);
   Serial.print("Time survived: ");
-  Serial.print(float(getStateTime() / 1000.00)); // using the functions from framework to see how long the player survived for
-  Serial.println(" s");
+  // using the functions from framework to see how long the player survived forgetStateTime()
+  int seconds =  (getStateTime() % MINUTE) / SECOND;
+  int minutes = getStateTime() / MINUTE;
+  Serial.print(minutes); //minutes
+  Serial.print("min ");
+  Serial.print(seconds);
+  Serial.println(" sec");
 }
 
 /*************************************************************
    INIT MODEL
  *************************************************************/
- void initTimers() {
+void initTimers() {
   fasterEvent = millis() + fasterInterval;
-  //moveTowerUpEvent = millis() + moveTowerUpInterval;
+  moveTowerUpEvent = millis() + moveTowerUpInterval;
 }
 void initModel() {
   initGrid();
@@ -294,9 +331,18 @@ void updateModel() {
         fasterEvent = millis() + fasterInterval;
         pogressivelyFaster();
       }
+
+      if (millis() >= moveTowerUpEvent) {
+        moveTowerUpEvent = millis() + moveTowerUpInterval;
+        if (canItMoveUp()) {
+          scrollGridUp();
+        } else {
+          gameOver();
+        }
+      }
       break;
     case S_END:
-      if (getStateTime() >= 1000) {
+      if (getStateTime() >= SECOND) {
         hasOneSecondElapsed = true;
       }
       break;
