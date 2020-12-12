@@ -1,5 +1,5 @@
 #include <AberLED.h>
-
+#include "letters.h"
 // this is an invalid state: if we are in this state, things have
 // gone badly wrong! The setup function should change this immediately.
 #define S_INVALID   -1
@@ -210,6 +210,27 @@ void initModel() {
   initTimers();
 }
 /*************************************************************
+   DRAWING TO THE GRID - START 
+ *************************************************************/
+unsigned long stringEvent;
+unsigned const long stringInterval = 400L;
+int colour;
+ 
+int press[7] = {SPACE, P, R, E, S, S, FIVE};
+int pressIndex;
+
+void renderString(int letter[8][8], int colour) {
+  for (int j = 0; j < 8; j++) {
+    for (int i = 0; i < 8; i++) {
+      if (letter[i][j] == 1) {
+        AberLED.set(j, i, colour);
+      }
+    }
+  }
+}
+
+ 
+/*************************************************************
    This is the state machine code given in the worksheet, which
    you should use in your assignment too.
  *************************************************************/
@@ -250,6 +271,7 @@ void setup() {
   AberLED.begin();
   Serial.begin(9600);
   randomSeed(analogRead(0));
+  pressIndex = 0;
   initModel();
   gotoState(S_START);
 }
@@ -292,6 +314,7 @@ void handleInput() {
     case S_END:
       if (AberLED.getButtonDown(FIRE) && hasOneSecondElapsed) {
         hasOneSecondElapsed = false; // reset to false
+        pressIndex = 0;
         gotoState(S_START);
       }
       break;
@@ -308,6 +331,14 @@ void handleInput() {
 void updateModel() {
   switch (state) {
     case S_START:
+       if (millis() > stringEvent) {
+        stringEvent = millis() + stringInterval;
+        colour = random(1, 4); // random color: red, green and yellow
+        pressIndex++;
+        if (pressIndex == 7) {
+          pressIndex = 0;
+        }
+      }
       break;
     case S_GAME:
       if (millis() >= fallingEvent) {
@@ -360,7 +391,7 @@ void updateModel() {
 void render() {
   switch (state) {
     case S_START:
-      AberLED.set(4, 4, GREEN);
+      renderString(press[pressIndex], colour);
       break;
     case S_GAME:
       renderPlayer();
