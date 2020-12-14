@@ -129,7 +129,6 @@ void movePlayerDown() {
   if (grid[playerX][7] != 1) { // i need to check for the bottom row
     // if it is empty then I need to place a red block there
     playerY = 7;
-    //grid[playerX][playerY] = 1;
   } else  {
     // must be 8 so that the if condition triggers correctly
     // if it is not I put a block in the previous y position
@@ -218,11 +217,11 @@ unsigned long stringEvent;
 unsigned const long stringInterval = 400L;
 int colour;
 
-// START STATE
+// press5 string with a space
 const int press[7] = {SPACE, P, R, E, S, S, FIVE};
 int pressIndex;
 
-// FUNCTIONS
+// takes a letter from letters.h, and applies a random colour (not black)
 void renderString(int letter[8][8], int colour) {
   for (int j = 0; j < 8; j++) {
     for (int i = 0; i < 8; i++) {
@@ -402,7 +401,7 @@ void updateModel() {
         colour = random(1, 4); // random color: red, green and yellow
         pressIndex++;
         if (pressIndex == 7) {
-          pressIndex = 0;
+          pressIndex = 0; // so that it goes from the beginning over and over again
         }
       }
       break;
